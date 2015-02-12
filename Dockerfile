@@ -9,7 +9,7 @@ RUN apt-get update && \
 WORKDIR /app
 COPY .  /app
 
-RUN bundle install && \
+RUN bundle install --path vendor/bundle -j4 && \
     bundle exec rake assets:precompile
 
 EXPOSE 3000
