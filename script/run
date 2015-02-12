@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# Usage: script/run
+# Descriptin: run Rails container
+#
+
+set -e
+
+IMAGE="quay.io/spesnova/docker-example-rails"
+
+docker kill docker-example-rails > /dev/null 2>&1 || true
+docker rm   docker-example-rails > /dev/null 2>&1 || true
+
+docker run \
+  -it \
+  --rm \
+  --name docker-example-rails \
+  -e DATABASE_HOST="$(docker inspect -f="{{ .NetworkSettings.IPAddress }}" postgres)" \
+  -e DATABASE_PORT="5432" \
+  -e DATABASE_USER="hello" \
+  -e DATABASE_PASSWORD="world" \
+  -e SECRET_KEY_BASE="450a851180c712e6a7ba6f4ab4a9624caddfc02d842eef3315cc47f9b0a16ef3cb5e5b68184d998604076a05d32d108b465f7bfe23623222690be720c7bfd39c" \
+  -e RACK_ENV=production \
+  -e RAILS_SERVE_STATIC_FILES=true \
+  -v /app \
+  "${IMAGE}" \
+  $@
