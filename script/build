@@ -1,12 +1,70 @@
 #!/bin/bash
 #
-# Usage: script/build
+# Usage: script/build <BRANCH>
 # Descriptin: build Rails image
 #
 
 set -e
 
 IMAGE="quay.io/spesnova/docker-example-rails"
+REPO="github.com/spesnova/docker-example-rails"
+RACK_ENV="production"
+BRANCH="master"
 
-echo "==> Building docker image '${IMAGE}'..."
+if [ -n "$1" ]; then
+  BRANCH=$1
+fi
+
+echo "==> Checking src directory..."
+if ! test -d /home/core/src ; then
+  mkdir -pv /home/core/src
+fi
+
+echo "==> Checking cache directory..."
+if ! test -d /home/core/cache ; then
+  mkdir -pv /home/core/cache
+fi
+
+echo "==> Checking repo existance..."
+if ! test -d /home/core/src/"${REPO}"/.git ; then
+  git clone https://"${REPO}".git /home/core/src/"${REPO}"
+fi
+
+echo "==> Updating repo..."
+cd /home/core/src/"${REPO}"
+git fetch -p
+git checkout "${BRANCH}"
+git pull origin "${BRANCH}"
+
+echo "==> Installing gems..."
+docker kill bundle-install > /dev/null 2>&1 || true
+docker rm   bundle-install > /dev/null 2>&1 || true
+docker run \
+  --rm \
+  --name bundle-install \
+  -e RACK_ENV="${RACK_ENV}" \
+  -v /home/core/src/"${REPO}":/app \
+  -v /home/core/cache/"${REPO}"/vendor/bundle:/app/vendor/bundle \
+  "${IMAGE}" \
+  bundle install --path vendor/bundle -j4
+
+echo "==> Compiling assets..."
+docker kill assets-precompile > /dev/null 2>&1 || true
+docker rm   assets-precompile > /dev/null 2>&1 || true
+docker run \
+  -it \
+  --rm \
+  --name assets-precompile \
+  -e RACK_ENV="${RACK_ENV}" \
+  -v /home/core/src/"${REPO}":/app \
+  -v /home/core/cache/"${REPO}"/assets:/app/public/assets \
+  "${IMAGE}" \
+  bundle exec rake assets:precompile
+
+echo "==> Preparing build..."
+sudo cp -rf /home/core/cache/"${REPO}"/vendor/bundle /home/core/src/"${REPO}"/vendor/
+sudo cp -rf /home/core/cache/"${REPO}"/assets        /home/core/src/"${REPO}"/public/
+
+echo "==> Building '${IMAGE}'..."
+cd /home/core/src/"${REPO}"
 docker build -t="${IMAGE}" .
