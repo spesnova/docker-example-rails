@@ -42,7 +42,6 @@ tmp
 db/*.sqlite3
 db/*.sqlite3-journal
 public/system
-public/assets
 coverage/
 spec/tmp
 **.orig
@@ -55,7 +54,6 @@ pickle-email-*.html
 
 ## Environment normalisation:
 .bundle
-vendor/bundle
 
 # these should all be checked in to normalise the environment:
 # Gemfile.lock, .ruby-version, .ruby-gemset
