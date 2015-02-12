@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# Usage: script/run
+# Description: run Nginx container
+#
+
+set -e
+
+IMAGE="quay.io/spesnova/docker-example-nginx"
+
+docker kill docker-example-nginx > /dev/null 2>&1 || true
+docker rm   docker-example-nginx > /dev/null 2>&1 || true
+
+docker run \
+  -it \
+  --rm \
+  -e SERVERNAME="hello" \
+  -p 80:80 \
+  -p 8090:8090 \
+  --volumes-from docker-example-rails \
+  "${IMAGE}" \
+  $@
