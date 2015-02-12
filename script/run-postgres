@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# Usage: script/run-postgres
+# Descriptin: run PostgreSQL container
+#
+
+set -e
+
+docker kill postgres > /dev/null 2>&1 || true
+docker rm   postgres > /dev/null 2>&1 || true
+
+docker run \
+  -d \
+  --name postgres \
+  -e POSTGRES_USER="hello" \
+  -e POSTGRES_PASSWORD="world" \
+  -p 5432:5432 \
+  postgres:9.4.0
