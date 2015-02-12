@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# Usage: script/build
+# Descriptin: build Rails image
+#
+
+set -e
+
+IMAGE="quay.io/spesnova/docker-example-rails"
+
+echo "==> Building docker image '${IMAGE}'..."
+docker build -t="${IMAGE}" .
