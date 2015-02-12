@@ -17,3 +17,10 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+#
+# CoreOS(Vagrant)
+#
+.vagrant
+user-data
+.env
