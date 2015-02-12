@@ -46,3 +46,5 @@ group :development, :test do
   gem 'spring'
 end
 
+# Use rails_stgout_logging to configure your app to log to standard out
+gem 'rails_stdout_logging'
