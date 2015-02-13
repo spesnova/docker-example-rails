@@ -36,6 +36,9 @@ git fetch -p
 git checkout "${BRANCH}"
 git pull origin "${BRANCH}"
 
+echo "==> Pulling latest image..."
+docker pull "${IMAGE}"
+
 echo "==> Installing gems..."
 docker kill bundle-install > /dev/null 2>&1 || true
 docker rm   bundle-install > /dev/null 2>&1 || true
@@ -58,6 +61,7 @@ docker run \
   -e RACK_ENV="${RACK_ENV}" \
   -v /home/core/src/"${REPO}":/app \
   -v /home/core/cache/"${REPO}"/assets:/app/public/assets \
+  -v /home/core/cache/"${REPO}"/vendor/bundle:/app/vendor/bundle \
   "${IMAGE}" \
   bundle exec rake assets:precompile
 
