@@ -10,5 +10,7 @@
 
 <%= yield %>
 
+  <hr>
+  <h1>From <%= ENV["COLOR"].blank? ? "blue" : ENV["COLOR"] %> container</h1>
 </body>
 </html>
