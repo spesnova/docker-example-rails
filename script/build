@@ -10,28 +10,30 @@ IMAGE="quay.io/spesnova/docker-example-rails"
 REPO="github.com/spesnova/docker-example-rails"
 RACK_ENV="production"
 BRANCH="master"
+SRC_PATH="${HOME}/src"
+CACHE_PATH="${HOME}/cache"
 
 if [ -n "$1" ]; then
   BRANCH=$1
 fi
 
 echo "==> Checking src directory..."
-if ! test -d /home/core/src ; then
-  mkdir -pv /home/core/src
+if ! test -d "${SRC_PATH}" ; then
+  mkdir -pv "${SRC_PATH}"
 fi
 
 echo "==> Checking cache directory..."
-if ! test -d /home/core/cache ; then
-  mkdir -pv /home/core/cache
+if ! test -d "${CACHE_PATH}" ; then
+  mkdir -pv "${CACHE_PATH}"
 fi
 
 echo "==> Checking repo existance..."
-if ! test -d /home/core/src/"${REPO}"/.git ; then
-  git clone https://"${REPO}".git /home/core/src/"${REPO}"
+if ! test -d "${SRC_PATH}"/"${REPO}"/.git ; then
+  git clone https://"${REPO}".git "${SRC_PATH}"/"${REPO}"
 fi
 
 echo "==> Updating repo..."
-cd /home/core/src/"${REPO}"
+cd "${SRC_PATH}"/"${REPO}"
 git fetch -p
 git checkout "${BRANCH}"
 git pull origin "${BRANCH}"
@@ -46,8 +48,8 @@ docker run \
   --rm \
   --name bundle-install \
   -e RACK_ENV="${RACK_ENV}" \
-  -v /home/core/src/"${REPO}":/app \
-  -v /home/core/cache/"${REPO}"/vendor/bundle:/app/vendor/bundle \
+  -v "${SRC_PATH}"/"${REPO}":/app \
+  -v "${CACHE_PATH}"/"${REPO}"/vendor/bundle:/app/vendor/bundle \
   "${IMAGE}" \
   bundle install --path vendor/bundle -j4
 
@@ -59,16 +61,16 @@ docker run \
   --rm \
   --name assets-precompile \
   -e RACK_ENV="${RACK_ENV}" \
-  -v /home/core/src/"${REPO}":/app \
-  -v /home/core/cache/"${REPO}"/assets:/app/public/assets \
-  -v /home/core/cache/"${REPO}"/vendor/bundle:/app/vendor/bundle \
+  -v "${SRC_PATH}"/"${REPO}":/app \
+  -v "${CACHE_PATH}"/"${REPO}"/assets:/app/public/assets \
+  -v "${CACHE_PATH}"/"${REPO}"/vendor/bundle:/app/vendor/bundle \
   "${IMAGE}" \
   bundle exec rake assets:precompile
 
 echo "==> Preparing build..."
-sudo cp -rf /home/core/cache/"${REPO}"/vendor/bundle /home/core/src/"${REPO}"/vendor/
-sudo cp -rf /home/core/cache/"${REPO}"/assets        /home/core/src/"${REPO}"/public/
+sudo cp -rf "${CACHE_PATH}"/"${REPO}"/vendor/bundle "${SRC_PATH}"/"${REPO}"/vendor/
+sudo cp -rf "${CACHE_PATH}"/"${REPO}"/assets        "${SRC_PATH}"/"${REPO}"/public/
 
 echo "==> Building '${IMAGE}'..."
-cd /home/core/src/"${REPO}"
+cd "${SRC_PATH}"/"${REPO}"
 docker build -t="${IMAGE}" .
