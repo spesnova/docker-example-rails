@@ -3,7 +3,7 @@ MAINTAINER Seigo Uchida <spesnova@gmail.com> (@spesnova)
 
 RUN apt-get update && \
     apt-get install -y \
-      nodejs && \
+      nodejs=0.10.29~dfsg-1.1 && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
