@@ -15,6 +15,19 @@ coreos:
         ExecStart=/usr/bin/timedatectl set-timezone <%= ENV["TIMEZONE"] %>
         RemainAfterExit=yes
         Type=oneshot
+    - name: install-docker-compose.service
+      command: start
+      content: |
+        [Unit]
+        Description=Set the timezone
+
+        [Service]
+        ExecStartPre=/usr/bin/mkdir -p /opt/bin
+        ExecStart=/usr/bin/wget https://github.com/docker/compose/releases/download/<%= ENV["COMPOSE_VERSION"] %>/docker-compose-Linux-x86_64 -O /opt/bin/compose
+        ExecStartPost=/usr/bin/chown root:root /opt/bin/compose
+        ExecStartPost=/usr/bin/chmod +x /opt/bin/compose
+        RemainAfterExit=yes
+        Type=oneshot
     - name: docker-tcp.socket
       command: start
       enable: true
