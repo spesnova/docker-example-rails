@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+# Usage: script/fast-build <BRANCH>
+# Descriptin: build Rails image using cache
+#
+
+set -e
+
+IMAGE="quay.io/spesnova/docker-example-rails"
+REPO="github.com/spesnova/docker-example-rails"
+RACK_ENV="production"
+BRANCH="master"
+SRC_PATH="${HOME}/src"
+CACHE_PATH="${HOME}/cache"
+
+if [ -n "$1" ]; then
+  BRANCH=$1
+fi
+
+echo "==> Checking src directory..."
+if ! test -d "${SRC_PATH}" ; then
+  mkdir -pv "${SRC_PATH}"
+fi
+
+echo "==> Checking cache directory..."
+if ! test -d "${CACHE_PATH}" ; then
+  mkdir -pv "${CACHE_PATH}"
+fi
+
+echo "==> Checking repo existance..."
+if ! test -d "${SRC_PATH}"/"${REPO}"/.git ; then
+  git clone https://"${REPO}".git "${SRC_PATH}"/"${REPO}"
+fi
+
+echo "==> Updating repo..."
+cd "${SRC_PATH}"/"${REPO}"
+git fetch -p
+git checkout "${BRANCH}"
+git pull origin "${BRANCH}"
+
+echo "==> Pulling latest image..."
+docker pull "${IMAGE}"
+
+echo "==> Installing gems..."
+docker kill bundle-install > /dev/null 2>&1 || true
+docker rm   bundle-install > /dev/null 2>&1 || true
+docker run \
+  --rm \
+  --name bundle-install \
+  -e RACK_ENV="${RACK_ENV}" \
+  -v "${SRC_PATH}"/"${REPO}":/app \
+  -v "${CACHE_PATH}"/"${REPO}"/vendor/bundle:/app/vendor/bundle \
+  "${IMAGE}" \
+  bundle install --path vendor/bundle -j4
+
+echo "==> Compiling assets..."
+docker kill assets-precompile > /dev/null 2>&1 || true
+docker rm   assets-precompile > /dev/null 2>&1 || true
+docker run \
+  -it \
+  --rm \
+  --name assets-precompile \
+  -e RACK_ENV="${RACK_ENV}" \
+  -v "${SRC_PATH}"/"${REPO}":/app \
+  -v "${CACHE_PATH}"/"${REPO}"/assets:/app/public/assets \
+  -v "${CACHE_PATH}"/"${REPO}"/vendor/bundle:/app/vendor/bundle \
+  "${IMAGE}" \
+  bundle exec rake assets:precompile
+
+echo "==> Preparing build..."
+sudo cp -rf "${CACHE_PATH}"/"${REPO}"/vendor/bundle "${SRC_PATH}"/"${REPO}"/vendor/
+sudo cp -rf "${CACHE_PATH}"/"${REPO}"/assets        "${SRC_PATH}"/"${REPO}"/public/
+
+echo "==> Building '${IMAGE}'..."
+cd "${SRC_PATH}"/"${REPO}"
+docker build -t="${IMAGE}" .

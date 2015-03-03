@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# Usage: script/push
+# Descriptin: build Rails image
+#
+
+docker push quay.io/spesnova/docker-example-rails
