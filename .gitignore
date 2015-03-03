@@ -26,6 +26,12 @@ user-data
 .env
 
 #
+# Compose
+#
+.env
+.env.production
+
+#
 # Rails
 #
 *.rbc
