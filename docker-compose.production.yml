@@ -1,0 +1,29 @@
+web:
+  image: quay.io/spesnova/docker-example-rails
+  command: bundle exec puma -C config/puma.rb -b unix:///app/tmp/puma.sock
+  volumes:
+    - /app
+  ports:
+    - 3000
+  env_file:
+    - .env.production
+  environment:
+    - RACK_ENV=production
+    - RAILS_ENV=production
+    - RAILS_SERVE_STATIC_FILES=true
+    - MIN_THREADS=1
+    - MAX_THREADS=1
+db:
+  image: postgres:9.4.0
+  ports:
+    - 5432:5432
+  env_file:
+    - .env.production
+nginx:
+  image: quay.io/spesnova/docker-example-nginx:latest
+  ports:
+    - 80:80
+  volumes:
+    - nginx.conf:/etc/nginx/nginx.conf
+  volumes_from:
+     - web
