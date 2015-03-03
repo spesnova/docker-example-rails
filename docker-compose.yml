@@ -1,0 +1,26 @@
+web:
+  build: .
+  command: bundle exec puma -C config/puma.rb
+  ports:
+    - 80:3000
+  volumes:
+    - .:/app
+  links:
+    - db
+  env_file:
+    - .env
+  environment:
+    - RACK_ENV=development
+    - RAILS_ENV=development
+    - MIN_THREADS=1
+    - MAX_THREADS=1
+    - DATABASE_HOST=db
+    - DATABASE_PORT=5432
+    - DATABASE_USER=hello
+    - DATABASE_PASSWORD=world
+    - COLOR=blue
+db:
+  image: postgres:9.4.0
+  environment:
+    - POSTGRES_USER=hello
+    - POSTGRES_PASSWORD=world
