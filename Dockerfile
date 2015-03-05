@@ -12,7 +12,7 @@ RUN apt-get update && \
       ruby2.1-dev \
       ruby=1:2.1.0.4 \
       nodejs=0.10.29~dfsg-1.1 && \
-    rm -rf /var/lib/apt/lists/* &&
+    rm -rf /var/lib/apt/lists/* && \
     gem install bundler --no-ri --no-rdoc
 
 COPY Gemfile      /app/Gemfile
