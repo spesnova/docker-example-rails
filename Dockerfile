@@ -20,7 +20,7 @@ COPY Gemfile.lock /app/Gemfile.lock
 RUN bundle install -j4
 
 COPY . /app
-RUN bundle exec rake assets:precompile RAILS_ENV=development
+RUN bundle exec rake assets:precompile RAILS_ENV=production
 
 EXPOSE 3000
 

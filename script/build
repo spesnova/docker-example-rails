@@ -5,6 +5,5 @@
 #
 
 docker build \
-  -f Dockerfile.production \
   -t quay.io/spesnova/docker-example-rails \
   .
